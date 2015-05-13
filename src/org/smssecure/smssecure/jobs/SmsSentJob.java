@@ -68,6 +68,7 @@ public class SmsSentJob extends MasterSecretJob {
   }
 
   private void handleDeliveredResult(long messageId, int result) {
+    MessageNotifier.sendDeliveryToast(context);
     DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
   }
 
