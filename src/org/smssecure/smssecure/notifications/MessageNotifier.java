@@ -83,14 +83,14 @@ public class MessageNotifier {
     visibleThread = threadId;
   }
 
-  public static void sendDeliveryToast(final Context context, final String phoneNumber){
+  public static void sendDeliveryToast(final Context context, final String recipientName){
     new Thread() {
       @Override
       public void run() {
         Looper.prepare();
-        Log.w(TAG, "Sending Toast...");
+        Log.w(TAG, "Message received by "+recipientName);
         Toast.makeText(context.getApplicationContext(),
-                       context.getString(R.string.MessageNotifier_message_received, phoneNumber),
+                       context.getString(R.string.MessageNotifier_message_received, recipientName),
                        Toast.LENGTH_LONG).show();
         Looper.loop();
       }

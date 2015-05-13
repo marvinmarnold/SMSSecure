@@ -69,10 +69,11 @@ public class SmsSentJob extends MasterSecretJob {
 
   private void handleDeliveredResult(MasterSecret masterSecret, long messageId, int result) {
     try {
-      EncryptingSmsDatabase database = DatabaseFactory.getEncryptingSmsDatabase(context);
-      SmsMessageRecord      record   = database.getMessage(masterSecret, messageId);
+      EncryptingSmsDatabase database      = DatabaseFactory.getEncryptingSmsDatabase(context);
+      SmsMessageRecord      record        = database.getMessage(masterSecret, messageId);
+      String                recipientName = (record.getIndividualRecipient().getName() == null ? record.getIndividualRecipient().getNumber() : record.getIndividualRecipient().getName());
 
-      MessageNotifier.sendDeliveryToast(context, record.getIndividualRecipient().getNumber());
+      MessageNotifier.sendDeliveryToast(context, recipientName);
       DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
     } catch (NoSuchMessageException e) {
       Log.w(TAG, e);
