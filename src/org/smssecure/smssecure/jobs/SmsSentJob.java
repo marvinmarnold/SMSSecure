@@ -73,7 +73,9 @@ public class SmsSentJob extends MasterSecretJob {
       SmsMessageRecord      record        = database.getMessage(masterSecret, messageId);
       String                recipientName = (record.getIndividualRecipient().getName() == null ? record.getIndividualRecipient().getNumber() : record.getIndividualRecipient().getName());
 
-      MessageNotifier.sendDeliveryToast(context, recipientName);
+      if (!record.isDelivered()){
+        MessageNotifier.sendDeliveryToast(context, recipientName);
+      }
       DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
     } catch (NoSuchMessageException e) {
       Log.w(TAG, e);
