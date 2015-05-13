@@ -52,7 +52,7 @@ public class SmsSentJob extends MasterSecretJob {
         handleSentResult(masterSecret, messageId, result);
         break;
       case SmsDeliveryListener.DELIVERED_SMS_ACTION:
-        handleDeliveredResult(messageId, result);
+        handleDeliveredResult(masterSecret, messageId, result);
         break;
     }
   }
@@ -67,9 +67,16 @@ public class SmsSentJob extends MasterSecretJob {
 
   }
 
-  private void handleDeliveredResult(long messageId, int result) {
-    MessageNotifier.sendDeliveryToast(context);
-    DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
+  private void handleDeliveredResult(MasterSecret masterSecret, long messageId, int result) {
+    try {
+      EncryptingSmsDatabase database = DatabaseFactory.getEncryptingSmsDatabase(context);
+      SmsMessageRecord      record   = database.getMessage(masterSecret, messageId);
+
+      MessageNotifier.sendDeliveryToast(context, record.getIndividualRecipient().getNumber());
+      DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
+    } catch (NoSuchMessageException e) {
+      Log.w(TAG, e);
+    }
   }
 
   private void handleSentResult(MasterSecret masterSecret, long messageId, int result) {
