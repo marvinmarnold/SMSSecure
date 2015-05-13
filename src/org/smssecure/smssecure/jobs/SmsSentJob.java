@@ -16,6 +16,7 @@ import org.smssecure.smssecure.database.model.SmsMessageRecord;
 import org.smssecure.smssecure.jobs.requirements.MasterSecretRequirement;
 import org.smssecure.smssecure.notifications.MessageNotifier;
 import org.smssecure.smssecure.service.SmsDeliveryListener;
+import org.smssecure.smssecure.util.SMSSecurePreferences;
 import org.whispersystems.jobqueue.JobParameters;
 import org.whispersystems.libaxolotl.state.SessionStore;
 
@@ -73,7 +74,7 @@ public class SmsSentJob extends MasterSecretJob {
       SmsMessageRecord      record        = database.getMessage(masterSecret, messageId);
       String                recipientName = (record.getIndividualRecipient().getName() == null ? record.getIndividualRecipient().getNumber() : record.getIndividualRecipient().getName());
 
-      if (!record.isDelivered()){
+      if (!record.isDelivered() && SMSSecurePreferences.isSmsDeliveryReportsToastEnabled(context)){
         MessageNotifier.sendDeliveryToast(context, recipientName);
       }
       DatabaseFactory.getEncryptingSmsDatabase(context).markStatus(messageId, result);
