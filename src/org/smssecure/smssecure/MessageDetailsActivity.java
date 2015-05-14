@@ -47,6 +47,7 @@ import org.smssecure.smssecure.util.DirectoryHelper;
 import org.smssecure.smssecure.util.DynamicLanguage;
 import org.smssecure.smssecure.util.DynamicTheme;
 import org.smssecure.smssecure.util.GroupUtil;
+import org.smssecure.smssecure.util.SMSSecurePreferences;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -138,10 +139,10 @@ public class MessageDetailsActivity extends PassphraseRequiredActionBarActivity 
     transport.setText(transportText);
   }
 
-  private void updateTime(MessageRecord messageRecord) {
+  private void updateTime(Context context, MessageRecord messageRecord) {
     if (messageRecord.isPending() || messageRecord.isFailed()) {
       sentDate.setText("-");
-      receivedContainer.setVisibility(View.GONE);
+      receivedDate.setText("-");
     } else {
       Locale           dateLocale    = dynamicLanguage.getCurrentLocale();
       SimpleDateFormat dateFormatter = DateUtils.getDetailedDateFormatter(this, dateLocale);
@@ -151,7 +152,13 @@ public class MessageDetailsActivity extends PassphraseRequiredActionBarActivity 
         receivedDate.setText(dateFormatter.format(new Date(messageRecord.getDateReceived())));
         receivedContainer.setVisibility(View.VISIBLE);
       } else {
-        receivedContainer.setVisibility(View.GONE);
+        if (messageRecord.isDelivered()) {
+          receivedDate.setText(getString(R.string.yes));
+        } else if (SMSSecurePreferences.isSmsDeliveryReportsEnabled(context)) {
+          receivedDate.setText(getString(R.string.no));
+        } else {
+          receivedContainer.setVisibility(View.GONE);
+        }
       }
     }
   }
@@ -278,7 +285,8 @@ public class MessageDetailsActivity extends PassphraseRequiredActionBarActivity 
 
     @Override
     public void onPostExecute(Recipients recipients) {
-      if (getContext() == null) {
+      Context context = getContext();
+      if (context == null) {
         Log.w(TAG, "AsyncTask finished with a destroyed context, leaving early.");
         return;
       }
@@ -291,7 +299,7 @@ public class MessageDetailsActivity extends PassphraseRequiredActionBarActivity 
         metadataContainer.setVisibility(View.GONE);
       } else {
         updateTransport(messageRecord);
-        updateTime(messageRecord);
+        updateTime(context, messageRecord);
         errorText.setVisibility(View.GONE);
         metadataContainer.setVisibility(View.VISIBLE);
       }
